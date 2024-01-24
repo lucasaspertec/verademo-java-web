@@ -46,4 +46,4 @@ jobs:
           path: .
       - name: veracode sast pipeline scan
         run: |
-          java -jar /opt/veracode/pipeline-scan.jar -vid ${{ secrets.VERACODE_ID }} -vkey ${{ secrets.VERACODE_KEY }} -f target/verademo.war --project_name "verademo-java-web" -r $(Build.SourceBranch) -aid ${{ secrets.VERACODE_PROJECT_ID }} -ds "Development" || true
+          java -jar /opt/veracode/pipeline-scan.jar -vid ${{ secrets.VERACODE_ID }} -vkey ${{ secrets.VERACODE_KEY }} -f target/verademo.war --project_name "verademo-java-web" -r ${{ github.ref }} -aid ${{ secrets.VERACODE_PROJECT_ID }} -ds "Development" || true
