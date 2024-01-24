@@ -11,7 +11,7 @@ on:
 jobs:
 
   build:
-    name: Build Maven
+    name: build maven
     runs-on: ubuntu-latest 
     steps:
     - uses: actions/checkout@v1 
@@ -19,7 +19,7 @@ jobs:
       uses: actions/setup-java@v1 
       with:
         java-version: 1.8
-    - name: Build with Maven 
+    - name: build maven
       run: |
         mvn clean package install
         pwd
@@ -29,3 +29,21 @@ jobs:
       with:
           name: verademo.war
           path: target/verademo.war
+
+  veracode-pipeline-scan:
+    name: veracode sast pipeline scan
+    runs-on: ubuntu-latest
+    needs: [build]
+    container: 
+      image: veracode/pipeline-scan:latest 
+      options: --user root 
+    steps:
+      - uses: actions/checkout@v2
+      - name: get archive
+        uses: actions/download-artifact@v3 
+        with:
+          name: verademo.war
+          path: .
+      - name: veracode sast pipeline scan
+        run: |
+          java -jar /opt/veracode/pipeline-scan.jar -vid ${{ secrets.VERACODE_ID }} -vkey ${{ secrets.VERACODE_KEY }} -f target/verademo.war --project_name "verademo-java-web -r $(Build.SourceBranch) -aid ${{ secrets.VERACODE_PROJECT_ID }} -ds "Development" || true
