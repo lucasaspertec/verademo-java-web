@@ -48,6 +48,41 @@ jobs:
         run: |
           java -jar /opt/veracode/api-wrapper.jar -vid "${{ secrets.VERACODE_ID }}" -vkey "${{ secrets.VERACODE_KEY }}" -action UploadAndScan -createprofile true -appname "verademo-java-web" -version "${{ github.run_id }}" -filepath target/verademo.war -teams "{{ secrets.VERACODE_TEAM }}" -criticality "Medium" -createsandbox true -sandboxname "${{ github.ref }}" -deleteincompletescan 2 -lifecyclestage "InDevelopmentPreAlpha" 
   
+  veracode-sast-policy-scan:
+    runs-on: ubuntu-latest
+    needs: [build]
+    container:
+      image: veracode/api-wrapper-java:latest
+      options: --user root
+    steps:
+      - uses: actions/checkout@v2
+      - name: get archive
+        uses: actions/download-artifact@v3 
+        with:
+          name: verademo.war
+          path: .
+        
+      - name: upload and scan policy compliance
+        run: |
+          java -jar /opt/veracode/api-wrapper.jar -vid "${{ secrets.VERACODE_ID }}" -vkey "${{ secrets.VERACODE_KEY }}" -action UploadAndScan -createprofile true -appname "verademo-java-web" -version "${{ github.run_id }}" -filepath target/verademo.war -teams "{{ secrets.VERACODE_TEAM }}" -criticality "Medium" -deleteincompletescan 2 -lifecyclestage "InDevelopmentPreAlpha" 
+  
+  veracode-software-composition-analisys:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: sca scan
+      env:
+        SRCCLR_API_TOKEN: ${{ secrets.SRCCLR_API_TOKEN }}
+      run: |
+        export SRCCLR_SCM_REF=${{ github.workflow }}
+        export SRCCLR_SCM_REF_TYPE="branch"
+        export SRCCLR_SCM_REV=${{ github.run_id }}
+        export SRCCLR_SCM_TYPE="GITHUB"
+        export EXTRA_ARGS='--update-advisor --uri-as-name --ref ${{ github.ref_name }}' 
+
+        curl -sSL https://download.sourceclear.com/ci.sh | bash -s -- scan $EXTRA_ARGS
+    continue-on-error: true
+  
   veracode-pipeline-scan:
     name: veracode sast pipeline scan
     runs-on: ubuntu-latest
@@ -64,4 +99,4 @@ jobs:
           path: .
       - name: veracode sast pipeline scan
         run: |
-          java -jar /opt/veracode/pipeline-scan.jar -vid ${{ secrets.VERACODE_ID }} -vkey ${{ secrets.VERACODE_KEY }} -f target/verademo.war --project_name "verademo-java-web" -r ${{ github.ref }} -aid ${{ secrets.VERACODE_PROJECT_ID }} -ds "Development" || true
+          java -jar /opt/veracode/pipeline-scan.jar -vid ${{ secrets.VERACODE_ID }} -vkey ${{ secrets.VERACODE_KEY }} -f target/verademo.war --project_name "verademo-java-web" -r ${{ github.ref }} -aid ${{ secrets.VERACODE_PROJECT_ID }} -ds "Development"
