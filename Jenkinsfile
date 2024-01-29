@@ -40,7 +40,7 @@ pipeline {
                     -createprofile false \
                     -filepath ${caminhoPacote} \
                     -createsandbox true \
-                    -sandboxname "SANDBOX_1" \
+                    -sandboxname "${GIT_BRANCH}" \
                     -deleteincompletescan 2 \
                     -version "${BUILD_NUMBER}"
                  """)
