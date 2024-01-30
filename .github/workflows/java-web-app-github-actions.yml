@@ -75,10 +75,11 @@ jobs:
       - name: Check out main branch
         uses: actions/checkout@v2
         
-      - name: Download Artefato
-        uses: actions/download-artifact@v2
+      - name: get archive
+        uses: actions/download-artifact@v3 
         with:
-          name: pacoteVeracode
+          name: verademo.war
+          path: .
 
       - name: Veracode Upload And Scan
         uses: veracode/veracode-uploadandscan-action@0.2.6
@@ -97,10 +98,11 @@ jobs:
     name: veracode sast pipeline scan
 
     steps:
-      - name: Download Artefato
-        uses: actions/download-artifact@v2
+      - name: get archive
+        uses: actions/download-artifact@v3 
         with:
-          name: pacoteVeracode
+          name: verademo.war
+          path: .
 
       - name: pipeline-scan action step
         id: pipeline-scan
